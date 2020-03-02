@@ -28,7 +28,7 @@ Other requirements are in requirements.txt. You can simply install them by `pip 
 Soon.
 
 #### Validation:
-First you should download the ImageNet validation set, and corresponding annotation xmls. We need both validation set and annotation xmls in PyTorch format. Please refer to [ImageNet example][imagenet example] for details. For annotation xmls, we have [a reorgnized copy][annolink] on my Google Drive. You can directly download and extract it.
+First you should download the ImageNet validation set, and corresponding annotation xmls. We need both validation set and annotation xmls in PyTorch format. Please refer to [ImageNet example][imagenet example] for details.
 ### Training
 
 Soon. 
