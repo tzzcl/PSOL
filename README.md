@@ -36,4 +36,37 @@ Soon.
 
 We have provided some pretrained models at https://drive.google.com/open?id=1uepi6B6cL2EorygHgODG77HN9V1_ZTXX. If you want to directly test it, please download it.
 
-First you need to modify the 
+First you need to modify some variables in PSOL_inference.py:
+
+Line 229-231: Environment variables.
+
+Line 264-268: Root fold for validation image files and annotation files.
+
+Then you can run:
+
+`python PSOL_inference.py --loc-model {$LOC_MODEL} --cls-model {$CLS_MODEL} {--ten-crop}`
+
+`$LOC_MODEL` represents the localization models we support now. 
+
+Options:
+`densenet161`: DenseNet161
+`vgg16`: VGG16
+`vgggap`: replace all fc layers in VGG16 with a gap layer and a single fc layer
+`resnet50`: ResNet50
+`inceptionv3`: coming soon (because of the torchvision issue)
+
+`$CLS_MODEL` represents the classification models we support now. 
+Options:
+`densenet161`: DenseNet161
+`vgg16`: VGG16
+`resnet50`: ResNet50
+`inceptionv3`: InceptionV3
+`dpn131`: DPN131
+`efficientnetb7`: EfficientNetB7
+
+Please note that for SOTA classification models, you should change the resolutions in cls_transforms (Line248-Line249).
+
+`--ten-crop` means that the classification models are averaged from ten crops.
+
+Then you can get the final result.
+
