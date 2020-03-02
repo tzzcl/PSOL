@@ -40,7 +40,7 @@ First you need to modify some variables in PSOL_inference.py:
 
 Line 229-231: Environment variables.
 
-Line 264-268: Root fold for validation image files and annotation files.
+Line 264-268: Root folder for validation image files and annotation files.
 
 Then you can run:
 
