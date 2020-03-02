@@ -404,7 +404,7 @@ for k in range(1000):
     final_loc.extend(LocSet)
     cls_acc = np.sum(np.array(ClsSet))/len(ClsSet)
     final_cls.extend(ClsSet)
-    print('{} cls-loc acc is {}, loc acc is {}, {} cls acc is {}'.format(cls, cls_loc_acc, clsname, loc_acc, cls_acc))
+    print('{} cls-loc acc is {}, loc acc is {}, {} cls acc is {}'.format(cls, cls_loc_acc, loc_acc, clsname, cls_acc))
     with open('inference_CorLoc.txt', 'a+') as corloc_f:
         corloc_f.write('{} {}\n'.format(cls, loc_acc))
     accs.append(cls_loc_acc)
