@@ -246,7 +246,7 @@ cls_transform = transforms.Compose([
 ])
 ten_crop_aug = transforms.Compose([
     transforms.Resize(256),
-    transforms.TenCrop(256),
+    transforms.TenCrop(224),
     transforms.Lambda(lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
     transforms.Lambda(lambda crops: torch.stack([normalize(crop) for crop in crops])),
 ])
@@ -404,7 +404,7 @@ for k in range(1000):
     final_loc.extend(LocSet)
     cls_acc = np.sum(np.array(ClsSet))/len(ClsSet)
     final_cls.extend(ClsSet)
-    print('{} cls-loc acc is {}, loc acc is {}, vgg16 cls acc is {}'.format(cls, cls_loc_acc, loc_acc, cls_acc))
+    print('{} cls-loc acc is {}, loc acc is {}, {} cls acc is {}'.format(cls, cls_loc_acc, clsname, loc_acc, cls_acc))
     with open('inference_CorLoc.txt', 'a+') as corloc_f:
         corloc_f.write('{} {}\n'.format(cls, loc_acc))
     accs.append(cls_loc_acc)
@@ -420,7 +420,7 @@ print('Cls-Loc acc {}'.format(np.mean(accs)))
 print('Cls-Loc acc Top 5 {}'.format(np.mean(accs_top5)))
 
 print('GT Loc acc {}'.format(np.mean(loc_accs)))
-print('{} cls acc {}'.format(cls_model_name, np.mean(cls_accs)))
+print('{} cls acc {}'.format(clsname, np.mean(cls_accs)))
 with open('origin_result.txt', 'w') as f:
     for k in sorted(result.keys()):
         f.write('{} {}\n'.format(k, str(result[k])))
