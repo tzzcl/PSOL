@@ -3,9 +3,9 @@
 
 This is the offical website for PSOL. 
 
-This package is developed by Mr. Chen-Lin Zhang (http://lamda.nju.edu.cn/zhangcl/) and Mr. Yun-Hao Cao (http://lamda.nju.edu.cn/caoyh/). If you have any problem about 
+This package is developed by Mr. Chen-Lin Zhang (http://www.lamda.nju.edu.cn/zhangcl/) and Mr. Yun-Hao Cao (http://www.lamda.nju.edu.cn/caoyh/). If you have any problem about 
 the code, please feel free to contact Mr. Chen-Lin Zhang (zhangcl@lamda.nju.edu.cn). 
-The package is free for academic usage. You can run it at your own risk. For other purposes, please contact Prof. Jianxin Wu (wujx2001@gmail.com).
+The package is free for academic usage. You can run it at your own risk. For other purposes, please contact Prof. Jianxin Wu (mailto:wujx2001@gmail.com).
 
 If you find our package is useful to your research, please cite our paper:
 
