@@ -3,6 +3,8 @@
 
 This is the offical website for PSOL. 
 
+We have uploaded the poster for PSOL.
+![Poster][poster]
 This package is developed by Mr. Chen-Lin Zhang (http://www.lamda.nju.edu.cn/zhangcl/) and Mr. Yun-Hao Cao (http://www.lamda.nju.edu.cn/caoyh/). If you have any problem about 
 the code, please feel free to contact Mr. Chen-Lin Zhang (zhangcl@lamda.nju.edu.cn). 
 The package is free for academic usage. You can run it at your own risk. For other purposes, please contact Prof. Jianxin Wu (mailto:wujx2001@gmail.com).
@@ -84,4 +86,5 @@ Then you can get the final result.
 [pytorch]:https://pytorch.org/
 [imagenet example]:https://github.com/pytorch/examples/tree/master/imagenet
 [annolink]:https://drive.google.com/open?id=1XcSJ4WIhgema_jSPI0PJX14W2l8xQkvP
+[poster]:poster.png
 [modellink]:https://drive.google.com/open?id=1uepi6B6cL2EorygHgODG77HN9V1_ZTXX
