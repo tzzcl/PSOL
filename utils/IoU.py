@@ -9,10 +9,10 @@ def get_gt_boxes(xmlfile):
     gt_boxes = []
     for obj in objs:
         bbox = obj.find('bndbox')
-        x1 = float(bbox.find('xmin').text)-1
-        y1 = float(bbox.find('ymin').text)-1
-        x2 = float(bbox.find('xmax').text)-1
-        y2 = float(bbox.find('ymax').text)-1
+        x1 = float(bbox.find('xmin').text)
+        y1 = float(bbox.find('ymin').text)
+        x2 = float(bbox.find('xmax').text)
+        y2 = float(bbox.find('ymax').text)
 
         gt_boxes.append((x1, y1, x2, y2))
     return gt_boxes
@@ -29,10 +29,10 @@ def get_cls_gt_boxes(xmlfile, cls):
         #print(cls_name, cls)
         if cls_name != cls:
             continue
-        x1 = float(bbox.find('xmin').text)-1
-        y1 = float(bbox.find('ymin').text)-1
-        x2 = float(bbox.find('xmax').text)-1
-        y2 = float(bbox.find('ymax').text)-1
+        x1 = float(bbox.find('xmin').text)
+        y1 = float(bbox.find('ymin').text)
+        x2 = float(bbox.find('xmax').text)
+        y2 = float(bbox.find('ymax').text)
 
         gt_boxes.append((x1, y1, x2, y2))
     if len(gt_boxes)==0:
