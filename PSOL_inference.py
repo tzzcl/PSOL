@@ -36,10 +36,11 @@ def normalize_intersec(i, j, h, w, intersec):
     return: normalize into [0, 1]
     '''
 
-    intersec[0] = (intersec[0] - j) / w
-    intersec[2] = (intersec[2] - j) / w
-    intersec[1] = (intersec[1] - i) / h
-    intersec[3] = (intersec[3] - i) / h
+    intersec[0] = min(max((intersec[0] - j) / w,0),1)
+    intersec[2] = min(max((intersec[2] - j) / w,0),1)
+    intersec[1] = min(max((intersec[1] - i) / h,0),1)
+    intersec[3] = min(max((intersec[3] - i) / h,0),1)
+
     return intersec
 class ResizedBBoxCrop(object):
 
