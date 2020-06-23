@@ -25,7 +25,7 @@ parser.add_argument('--input_size',default=448,dest='input_size')
 parser.add_argument('data',metavar='DIR',help='path to imagenet dataset')
 parser.add_argument('--gpu',help='which gpu to use',default='4,5,6,7',dest='gpu')
 parser.add_argument('--output_path',default='ImageNet/Projection/VGG16-448',dest='output_path')
-parser.add_argument('-batch_size',default=256,dest='batch_size')
+parser.add_argument('--batch_size',default=256,dest='batch_size')
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 os.environ['OMP_NUM_THREADS'] = "10"

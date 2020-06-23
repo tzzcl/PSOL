@@ -105,7 +105,7 @@ parser.add_argument('--gpu',help='which gpu to use',default='4,5,6,7',dest='gpu'
 parser.add_argument('--ddt_path',help='generated ddt path',default='ImageNet/Projection/VGG16-448',dest="ddt_path")
 parser.add_argument('--gt_path',help='validation groundtruth path',default='ImageNet_gt/',dest="gt_path")
 parser.add_argument('--save_path',help='model save path',default='ImageNet_checkpoint',dest='save_path')
-parser.add_argument('-batch_size',default=256,dest='batch_size')
+parser.add_argument('--batch_size',default=256,dest='batch_size')
 parser.add_argument('data',metavar='DIR',help='path to imagenet dataset')
 
 
