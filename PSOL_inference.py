@@ -5,278 +5,71 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from torch.backends import cudnn
-from torch.autograd import Variable
 import torch.nn as nn
 import torchvision
-import torchvision.models as models
 from PIL import Image
 from utils.func import *
-from copy import deepcopy
 from utils.vis import *
 from utils.IoU import *
-import copy
-from torchvision.transforms import functional as F
-import numbers
+from models.models import choose_locmodel,choose_clsmodel
+from utils.augment import *
 import argparse
-def compute_intersec(i, j, h, w, bbox):
-    '''
-    intersection box between croped box and GT BBox
-    '''
-    intersec = copy.deepcopy(bbox)
 
-    intersec[0] = max(j, bbox[0])
-    intersec[1] = max(i, bbox[1])
-    intersec[2] = min(j + w, bbox[2])
-    intersec[3] = min(i + h, bbox[3])
-    return intersec
-
-
-def normalize_intersec(i, j, h, w, intersec):
-    '''
-    return: normalize into [0, 1]
-    '''
-
-    intersec[0] = min(max((intersec[0] - j) / w,0),1)
-    intersec[2] = min(max((intersec[2] - j) / w,0),1)
-    intersec[1] = min(max((intersec[1] - i) / h,0),1)
-    intersec[3] = min(max((intersec[3] - i) / h,0),1)
-
-    return intersec
-class ResizedBBoxCrop(object):
-
-    def __init__(self, size, interpolation=Image.BILINEAR):
-        self.size = size
-
-        self.interpolation = interpolation
-
-    @staticmethod
-    def get_params(img, bbox, size):
-        #resize to 256
-        if isinstance(size, int):
-            w, h = img.size
-            if (w <= h and w == size) or (h <= w and h == size):
-                img = copy.deepcopy(img)
-                ow, oh = w, h
-            if w < h:
-                ow = size
-                oh = int(size*h/w)
-            else:
-                oh = size
-                ow = int(size*w/h)
-        else:
-            ow, oh = size[::-1]
-            w, h = img.size
-
-
-        intersec = copy.deepcopy(bbox)
-        ratew = ow / w
-        rateh = oh / h
-        intersec[0] = bbox[0]*ratew
-        intersec[2] = bbox[2]*ratew
-        intersec[1] = bbox[1]*rateh
-        intersec[3] = bbox[3]*rateh
-
-        #intersec = normalize_intersec(i, j, h, w, intersec)
-        return (oh, ow), intersec
-
-    def __call__(self, img, bbox):
-        """
-        Args:
-            img (PIL Image): Image to be cropped and resized.
-
-        Returns:
-            PIL Image: Randomly cropped and resized image.
-        """
-        size, crop_bbox = self.get_params(img, bbox, self.size)
-        return F.resize(img, self.size, self.interpolation), crop_bbox
-
-
-class CenterBBoxCrop(object):
-
-    def __init__(self, size, interpolation=Image.BILINEAR):
-        self.size = size
-
-        self.interpolation = interpolation
-
-    @staticmethod
-    def get_params(img, bbox, size):
-        #center crop
-        if isinstance(size, numbers.Number):
-            output_size = (int(size), int(size))
-
-        w, h = img.size
-        th, tw = output_size
-
-        i = int(round((h - th) / 2.))
-        j = int(round((w - tw) / 2.))
-
-        intersec = compute_intersec(i, j, th, tw, bbox)
-        intersec = normalize_intersec(i, j, th, tw, intersec)
-
-        #intersec = normalize_intersec(i, j, h, w, intersec)
-        return i, j, th, tw, intersec
-
-    def __call__(self, img, bbox):
-        """
-        Args:
-            img (PIL Image): Image to be cropped and resized.
-
-        Returns:
-            PIL Image: Randomly cropped and resized image.
-        """
-        i, j, th, tw, crop_bbox = self.get_params(img, bbox, self.size)
-        return F.center_crop(img, self.size), crop_bbox
-
-class VGGGAP(nn.Module):
-    def __init__(self, pretrained=True, num_classes=200):
-        super(VGGGAP,self).__init__()
-        self.features = torchvision.models.vgg16(pretrained=pretrained).features
-        self.avgpool = nn.AdaptiveAvgPool2d((1,1))
-        self.classifier = nn.Sequential((nn.Linear(512,512),nn.ReLU(),nn.Linear(512,4),nn.Sigmoid()))
-    def forward(self, x):
-        x = self.features(x)
-        x = self.avgpool(x)
-        x = x.view(x.size(0),-1)
-        x = self.classifier(x)
-        return x
-class VGG16(nn.Module):
-    def __init__(self, pretrained=True, num_classes=200):
-        super(VGG16,self).__init__()
-        self.features = torchvision.models.vgg16(pretrained=pretrained).features
-        temp_classifier = torchvision.models.vgg16(pretrained=pretrained).classifier
-        removed = list(temp_classifier.children())
-        removed = removed[:-1]
-        temp_layer = nn.Sequential(nn.Linear(4096,512),nn.ReLU(),nn.Linear(512,4),nn.Sigmoid())
-        removed.append(temp_layer)
-        self.classifier = nn.Sequential(*removed)
-    def forward(self, x):
-        x = self.features(x)
-        x = x.view(x.size(0),-1)
-        x = self.classifier(x)
-        return x
-
-
-def to_variable(x):
-    if torch.cuda.is_available():
-        x = x.cuda()
-    return Variable(x)
-
-def to_data(x):
-    if torch.cuda.is_available():
-        x = x.cpu()
-    return x.data
-
-def copy_parameters(model, pretrained_dict):
-    model_dict = model.state_dict()
-
-    pretrained_dict = {k[7:]: v for k, v in pretrained_dict.items() if k[7:] in model_dict and pretrained_dict[k].size()==model_dict[k[7:]].size()}
-    #for k, v in pretrained_dict.items():
-    #    print(k)
-    model_dict.update(pretrained_dict)
-    model.load_state_dict(model_dict)
-    return model
-def choose_locmodel(model_name):
-    if model_name == 'densenet161':
-        model = torchvision.models.densenet161(pretrained=True)
-
-        model.classifier = nn.Sequential(
-            nn.Linear(2208, 512),
-            nn.ReLU(),
-            nn.Linear(512, 4),
-            nn.Sigmoid()
-        )
-        model = copy_parameters(model, torch.load('densenet161loc.pth.tar'))
-    elif model_name == 'resnet50':
-        model = torchvision.models.resnet50(pretrained=True, num_classes=1000)
-        model.fc = nn.Sequential(
-            nn.Linear(2048, 512),
-            nn.ReLU(),
-            nn.Linear(512, 4),
-            nn.Sigmoid()
-        )
-        model = copy_parameters(model, torch.load('resnet50loc.pth.tar'))
-    elif model_name == 'vgggap':
-        model = VGGGAP(pretrained=True,num_classes=1000)
-        model = copy_parameters(model, torch.load('vgggaploc.pth.tar'))
-    elif model_name == 'vgg16':
-        model = VGG16(pretrained=True,num_classes=1000)
-        model = copy_parameters(model, torch.load('vgg16loc.pth.tar'))
-    elif model_name == 'inceptionv3':
-        #need for rollback inceptionv3 official code
-        pass
-    else:
-        raise ValueError('Do not have this model currently!')
-    return model
-def choose_clsmodel(model_name):
-    if model_name == 'vgg16':
-        cls_model = torchvision.models.vgg16(pretrained=True)
-    elif model_name == 'inceptionv3':
-        cls_model = torchvision.models.inception_v3(pretrained=True, aux_logits=True, transform_input=True)
-    elif model_name == 'resnet50':
-        cls_model = torchvision.models.resnet50(pretrained=True)
-    elif model_name == 'densenet161':
-        cls_model = torchvision.models.densenet161(pretrained=True)
-    elif model_name == 'dpn131':
-        cls_model = torch.hub.load('rwightman/pytorch-dpn-pretrained', 'dpn131', pretrained=True,test_time_pool=True)
-    elif model_name == 'efficientnetb7':
-        from efficientnet_pytorch import EfficientNet
-        cls_model = EfficientNet.from_pretrained('efficientnet-b7')
-    return cls_model
-parser = argparse.ArgumentParser(description='Parameters for PSOL')
+parser = argparse.ArgumentParser(description='Parameters for PSOL evaluation')
 parser.add_argument('--loc-model', metavar='locarg', type=str, default='vgg16',dest='locmodel')
-parser.add_argument('--cls-model', metavar='locarg', type=str, default='vgg16',dest='clsmodel')
+parser.add_argument('--cls-model', metavar='clsarg', type=str, default='vgg16',dest='clsmodel')
+parser.add_argument('--input_size',default=256,dest='input_size')
+parser.add_argument('--crop_size',default=224,dest='crop_size')
 parser.add_argument('--ten-crop', help='tencrop', action='store_true',dest='tencrop')
+parser.add_argument('--gpu',help='which gpu to use',default='4',dest='gpu')
+parser.add_argument('data',metavar='DIR',help='path to imagenet dataset')
+
 args = parser.parse_args()
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 os.environ['OMP_NUM_THREADS'] = "4"
 os.environ['MKL_NUM_THREADS'] = "4"
 cudnn.benchmark = True
 TEN_CROP = args.tencrop
 normalize = transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
 transform = transforms.Compose([
-        transforms.Resize((256,256)),
-        transforms.CenterCrop(224),
+        transforms.Resize((args.input_size,args.input_size)),
+        transforms.CenterCrop(args.crop_size),
         transforms.ToTensor(),
         normalize
 ])
 cls_transform = transforms.Compose([
-        transforms.Resize((256,256)),
-        transforms.CenterCrop(224),
+        transforms.Resize((args.input_size,args.input_size)),
+        transforms.CenterCrop(args.crop_size),
         transforms.ToTensor(),
         normalize
 ])
 ten_crop_aug = transforms.Compose([
-    transforms.Resize(256),
-    transforms.TenCrop(224),
+    transforms.Resize((args.input_size,args.input_size)),
+    transforms.TenCrop(args.crop_size),
     transforms.Lambda(lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
     transforms.Lambda(lambda crops: torch.stack([normalize(crop) for crop in crops])),
 ])
 locname = args.locmodel
-model = choose_clsmodel(locname)
+model = choose_locmodel(locname)
 
 print(model)
 model = model.to(0)
 model.eval()
 clsname = args.clsmodel
-cls_model = choose_clsmodel(locname)
+cls_model = choose_clsmodel(clsname)
 cls_model = cls_model.to(0)
 cls_model.eval()
 
-root = './'
+root = args.data
 val_imagedir = os.path.join(root, 'val')
 
-anno_root = './anno/'
-val_annodir = os.path.join(anno_root, 'val')
+anno_root = os.path.join(root,'bbox')
+val_annodir = os.path.join(anno_root, 'myval')
 
 
 classes = os.listdir(val_imagedir)
 classes.sort()
 temp_softmax = nn.Softmax()
-'''
-savepath = 'ImageNet/Visualization/test_PSOL'
-if not os.path.exists(savepath):
-    os.makedirs(savepath)
-'''
 #print(classes[0])
 
 
@@ -405,7 +198,7 @@ for k in range(1000):
     final_loc.extend(LocSet)
     cls_acc = np.sum(np.array(ClsSet))/len(ClsSet)
     final_cls.extend(ClsSet)
-    print('{} cls-loc acc is {}, loc acc is {}, {} cls acc is {}'.format(cls, cls_loc_acc, loc_acc, clsname, cls_acc))
+    print('{} cls-loc acc is {}, loc acc is {}, vgg16 cls acc is {}'.format(cls, cls_loc_acc, loc_acc, cls_acc))
     with open('inference_CorLoc.txt', 'a+') as corloc_f:
         corloc_f.write('{} {}\n'.format(cls, loc_acc))
     accs.append(cls_loc_acc)
@@ -422,6 +215,6 @@ print('Cls-Loc acc Top 5 {}'.format(np.mean(accs_top5)))
 
 print('GT Loc acc {}'.format(np.mean(loc_accs)))
 print('{} cls acc {}'.format(clsname, np.mean(cls_accs)))
-with open('origin_result.txt', 'w') as f:
+with open('Corloc_result.txt', 'w') as f:
     for k in sorted(result.keys()):
         f.write('{} {}\n'.format(k, str(result[k])))

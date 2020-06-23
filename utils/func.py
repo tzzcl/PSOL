@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
-
+import torch
+import copy
 def count_max(x):
     count_dict = {}
     for xlist in x:
@@ -69,10 +69,50 @@ def pca(X, k):
 
     #print(X-recon)
     return vec
+def to_variable(x):
+    if torch.cuda.is_available():
+        x = x.to(0)
+    return torch.autograd.Variable(x)
+
+def to_data(x):
+    if torch.cuda.is_available():
+        x = x.cpu()
+    return x.data
+
+def copy_parameters(model, pretrained_dict):
+    model_dict = model.state_dict()
+
+    pretrained_dict = {k[7:]: v for k, v in pretrained_dict.items() if k[7:] in model_dict and pretrained_dict[k].size()==model_dict[k[7:]].size()}
+    for k, v in pretrained_dict.items():
+        print(k)
+    model_dict.update(pretrained_dict)
+    model.load_state_dict(model_dict)
+    return model
 
 
+def compute_intersec(i, j, h, w, bbox):
+    '''
+    intersection box between croped box and GT BBox
+    '''
+    intersec = copy.deepcopy(bbox)
+
+    intersec[0] = max(j, bbox[0])
+    intersec[1] = max(i, bbox[1])
+    intersec[2] = min(j + w, bbox[2])
+    intersec[3] = min(i + h, bbox[3])
+    return intersec
 
 
+def normalize_intersec(i, j, h, w, intersec):
+    '''
+    return: normalize into [0, 1]
+    '''
+
+    intersec[0] = (intersec[0] - j) / w
+    intersec[2] = (intersec[2] - j) / w
+    intersec[1] = (intersec[1] - i) / h
+    intersec[3] = (intersec[3] - i) / h
+    return intersec
 
 
 

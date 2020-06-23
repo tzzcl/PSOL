@@ -1,6 +1,6 @@
 import numpy as np
 import xml.etree.ElementTree as ET
-
+import torch
 def get_gt_boxes(xmlfile):
     '''get ground-truth bbox from VOC xml file'''
     tree = ET.parse(xmlfile)
@@ -9,10 +9,10 @@ def get_gt_boxes(xmlfile):
     gt_boxes = []
     for obj in objs:
         bbox = obj.find('bndbox')
-        x1 = float(bbox.find('xmin').text)
-        y1 = float(bbox.find('ymin').text)
-        x2 = float(bbox.find('xmax').text)
-        y2 = float(bbox.find('ymax').text)
+        x1 = float(bbox.find('xmin').text)-1
+        y1 = float(bbox.find('ymin').text)-1
+        x2 = float(bbox.find('xmax').text)-1
+        y2 = float(bbox.find('ymax').text)-1
 
         gt_boxes.append((x1, y1, x2, y2))
     return gt_boxes
@@ -29,10 +29,10 @@ def get_cls_gt_boxes(xmlfile, cls):
         #print(cls_name, cls)
         if cls_name != cls:
             continue
-        x1 = float(bbox.find('xmin').text)
-        y1 = float(bbox.find('ymin').text)
-        x2 = float(bbox.find('xmax').text)
-        y2 = float(bbox.find('ymax').text)
+        x1 = float(bbox.find('xmin').text)-1
+        y1 = float(bbox.find('ymin').text)-1
+        x2 = float(bbox.find('xmax').text)-1
+        y2 = float(bbox.find('ymax').text)-1
 
         gt_boxes.append((x1, y1, x2, y2))
     if len(gt_boxes)==0:
@@ -104,3 +104,54 @@ def IoU(a, b):
     #if w<=0 or h<=0:
     #    o = 0
     return o
+
+def to_2d_tensor(inp):
+    inp = torch.Tensor(inp)
+    if len(inp.size()) < 2:
+        inp = inp.unsqueeze(0)
+    return inp
+
+
+def xywh_to_x1y1x2y2(boxes):
+    boxes = to_2d_tensor(boxes)
+    boxes[:, 2] += boxes[:, 0] - 1
+    boxes[:, 3] += boxes[:, 1] - 1
+    return boxes
+
+
+def x1y1x2y2_to_xywh(boxes):
+    boxes = to_2d_tensor(boxes)
+    boxes[:, 2] -= boxes[:, 0] - 1
+    boxes[:, 3] -= boxes[:, 1] - 1
+    return boxes
+
+def compute_IoU(pred_box, gt_box):
+    boxes1 = to_2d_tensor(pred_box)
+    # boxes1 = xywh_to_x1y1x2y2(boxes1)
+    boxes1[:, 2] = torch.clamp(boxes1[:, 0] + boxes1[:, 2], 0, 1)
+    boxes1[:, 3] = torch.clamp(boxes1[:, 1] + boxes1[:, 3], 0, 1)
+
+    boxes2 = to_2d_tensor(gt_box)
+    boxes2[:, 2] = torch.clamp(boxes2[:, 0] + boxes2[:, 2], 0, 1)
+    boxes2[:, 3] = torch.clamp(boxes2[:, 1] + boxes2[:, 3], 0, 1)
+    # boxes2 = xywh_to_x1y1x2y2(boxes2)
+
+    intersec = boxes1.clone()
+    intersec[:, 0] = torch.max(boxes1[:, 0], boxes2[:, 0])
+    intersec[:, 1] = torch.max(boxes1[:, 1], boxes2[:, 1])
+    intersec[:, 2] = torch.min(boxes1[:, 2], boxes2[:, 2])
+    intersec[:, 3] = torch.min(boxes1[:, 3], boxes2[:, 3])
+
+    def compute_area(boxes):
+        # in (x1, y1, x2, y2) format
+        dx = boxes[:, 2] - boxes[:, 0]
+        dx[dx < 0] = 0
+        dy = boxes[:, 3] - boxes[:, 1]
+        dy[dy < 0] = 0
+        return dx * dy
+
+    a1 = compute_area(boxes1)
+    a2 = compute_area(boxes2)
+    ia = compute_area(intersec)
+    assert ((a1 + a2 - ia < 0).sum() == 0)
+    return ia / (a1 + a2 - ia)
