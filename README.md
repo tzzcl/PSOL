@@ -40,11 +40,12 @@ PATH            the path to the ImageNet dataset
 --batch_size    batch_size for executing forward pass of CNN
 ```
 
-If you use default parameters, you are just using DDT-VGG16 with 448x448 as illustrated in the paper.
+If you use default parameters, you are just using DDT-VGG16 with 448x448 as illustrated in the paper. For efficiency, we provide generated VGG-16 448x448 boxes [pseudo boxes][pseudo boxes]. You can directly download it.
 #### Validation:
 First you should download the ImageNet validation set, and corresponding annotation xmls. We need both validation set and annotation xmls in PyTorch format. Please refer to [ImageNet example][imagenet example] for details.
 
 #### Folder Structure
+We except the ImageNet Folder has these structures:
 ```
 root/
 |-- train/
@@ -63,7 +64,7 @@ root/
 |   |-- class3 |-- image3.xml
 ...
 ```
-We except the ImageNet Folder has these structures:
+
 ### Training
 
 Please first refer to prepare datasets session for generating pseudo bounding boxes. Then, you can use `PSOL_training.py` to train `PSOL-Sep` models on pseudo bounding boxes.
@@ -104,3 +105,4 @@ Then you can get the final Corloc and Clsloc result.
 [annolink]:https://drive.google.com/open?id=1XcSJ4WIhgema_jSPI0PJX14W2l8xQkvP
 [poster]:poster.png
 [modellink]:https://drive.google.com/open?id=1uepi6B6cL2EorygHgODG77HN9V1_ZTXX
+[pseudo boxes]: https://drive.google.com/file/d/1bOrHlcqLhCMt5-d6FH-GryNEIn66YLWi/view?usp=sharing
