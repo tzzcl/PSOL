@@ -1,6 +1,5 @@
 # PSOL
-## We have updated the validation code for PSOL on ImageNet; CUB code and Training Code will be available soon;
-
+## We have updated the training and validation code for PSOL on ImageNet;
 This is the offical website for PSOL. 
 
 We have uploaded the poster for PSOL.
@@ -27,61 +26,59 @@ Other requirements are in requirements.txt. You can simply install them by `pip 
 
 ### prepare datasets:
 #### Training:
-Soon.
+First you should download the ImageNet training set. Then, use our program `generate_box_imagenet.py` to generate pseudo bounding boxes by DDT methods:
 
+`python generate_box_imagenet.py PATH`
+
+We follow the organization of PyTorch official ImageNet training script. There are some options in `generate_box_imagenet.py`:
+
+```
+PATH            the path to the ImageNet dataset
+--input_size    input size for each image (448 for default)
+--gpu           which gpus to use 
+--output_path   the output pseudo boxes folder
+--batch_size    batch_size for executing forward pass of CNN
+```
+
+If you use default parameters, you are just using DDT-VGG16 with 448x448 as illustrated in the paper.
 #### Validation:
 First you should download the ImageNet validation set, and corresponding annotation xmls. We need both validation set and annotation xmls in PyTorch format. Please refer to [ImageNet example][imagenet example] for details.
 ### Training
 
-Soon. 
+Please first refer to prepare datasets session for generating pseudo bounding boxes. Then, you can use `PSOL_training.py` to train `PSOL-Sep` models on pseudo bounding boxes.
+
+`python PSOL_training.py PATH`. There are some options in `PSOL_training.py`:
+
+```
+PATH            the path to the ImageNet dataset
+--loc-model     which localization model to use. Current options: densenet161, vgg16,vgggap, resnet50, densenet161
+--input_size    input size for each image (256 for default)
+--crop_size     crop size for each image (only used in validation process)
+--ddt_path      the path of generated DDT pseudo boxes
+--gt_path       the path for groundtruth on ImageNet val dataset
+--save_path     where to save the checkpoint
+--gpu           which gpus to use 
+--batch_size    batch_size for executing forward pass of CNN
+```
 ### Testing
 
 We have provided some [pretrained models][modellink]. If you want to directly test it, please download it.
 
-First you need to modify some variables in `PSOL_inference.py`:
-
-Line 229-231: Environment variables.
-
-Line 264-268: Root folder for validation image files and annotation files.
-
-Then you can run:
+We use same options as `PSOL_training.py` in `PSOL_inference.py`. Then you can run:
 
 `python PSOL_inference.py --loc-model {$LOC_MODEL} --cls-model {$CLS_MODEL} {--ten-crop}`
 
-`$LOC_MODEL` represents the localization models we support now. 
-
-Options:
-
-`densenet161`: DenseNet161
-
-`vgg16`: VGG16
-
-`vgggap`: replace all fc layers in VGG16 with a gap layer and a single fc layer
-
-`resnet50`: ResNet50
-
-`inceptionv3`: coming soon (because of the torchvision issue)
-
-`$CLS_MODEL` represents the classification models we support now. 
-Options:
-
-`densenet161`: DenseNet161
-
-`vgg16`: VGG16
-
-`resnet50`: ResNet50
-
-`inceptionv3`: InceptionV3
-
-`dpn131`: DPN131
-
-`efficientnetb7`: EfficientNetB7
+Extra Options:
+```
+--cls-model represents the classification models we support now. Current options: densenet161, vgg16, resnet50, inceptionv3, dpn131, efficientnetb7 (need to install pytorch-efficientnet). 
+--ten-crop use ten crop to boost the classification performance.
+```
 
 Please note that for SOTA classification models, you should change the resolutions in cls_transforms (Line248-Line249).
 
 `--ten-crop` means that the classification models are averaged from ten crops.
 
-Then you can get the final result.
+Then you can get the final Corloc and Clsloc result.
 
 [pytorch]:https://pytorch.org/
 [imagenet example]:https://github.com/pytorch/examples/tree/master/imagenet
