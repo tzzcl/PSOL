@@ -43,6 +43,27 @@ PATH            the path to the ImageNet dataset
 If you use default parameters, you are just using DDT-VGG16 with 448x448 as illustrated in the paper.
 #### Validation:
 First you should download the ImageNet validation set, and corresponding annotation xmls. We need both validation set and annotation xmls in PyTorch format. Please refer to [ImageNet example][imagenet example] for details.
+
+#### Folder Structure
+```
+root/
+|-- train/
+|   |-- class1 |-- image1.jpg 
+|   |-- class2 |-- image2.jpg
+|   |-- class3 |-- image3.jpg
+|   ...
+|-- val/
+|   |-- class1 |-- image1.jpg 
+|   |-- class2 |-- image2.jpg
+|   |-- class3 |-- image3.jpg
+|   ...
+|-- myval/ (groundtruth annotation xml file, you can change the folder name, and modify it in Line 67 in PSOL_inference.py)
+|   |-- class1 |-- image1.xml 
+|   |-- class2 |-- image2.xml
+|   |-- class3 |-- image3.xml
+...
+```
+We except the ImageNet Folder has these structures:
 ### Training
 
 Please first refer to prepare datasets session for generating pseudo bounding boxes. Then, you can use `PSOL_training.py` to train `PSOL-Sep` models on pseudo bounding boxes.
