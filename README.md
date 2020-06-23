@@ -13,7 +13,7 @@ If you find our package is useful to your research, please cite our paper:
 Reference: 
            
 [1] C.-L. Zhang, Y.-H. Cao and J. Wu. Rethinking the Route Towards Weakly Supervised Object Localization
-. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR 2020), Seattle, WA, USA, in press.
+. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR 2020), Seattle, WA (Virtual), USA, pp. 13460-13469.
 ## Requirements
 The code needs [PyTorch][pytorch] and OpenCV.
 
@@ -70,13 +70,11 @@ We use same options as `PSOL_training.py` in `PSOL_inference.py`. Then you can r
 
 Extra Options:
 ```
---cls-model represents the classification models we support now. Current options: densenet161, vgg16, resnet50, inceptionv3, dpn131, efficientnetb7 (need to install pytorch-efficientnet). 
---ten-crop use ten crop to boost the classification performance.
+--cls-model     represents the classification models we support now. Current options: densenet161, vgg16, resnet50, inceptionv3, dpn131, efficientnetb7 (need to install efficientnet-pytorch). 
+--ten-crop      use ten crop to boost the classification performance.
 ```
 
 Please note that for SOTA classification models, you should change the resolutions in cls_transforms (Line248-Line249).
-
-`--ten-crop` means that the classification models are averaged from ten crops.
 
 Then you can get the final Corloc and Clsloc result.
 
