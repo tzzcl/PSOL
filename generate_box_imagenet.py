@@ -111,7 +111,7 @@ for class_ind in range(1000):
             # visualize heatmap
             # show highlight in origin image
             highlight = np.round(highlight * 255)
-            highlight_big = cv2.resize(highlight, (wi, he), interpolation=cv2.INTER_NEAREST)
+            highlight_big = cv2.resize(highlight, (he, wi), interpolation=cv2.INTER_NEAREST)
             props = measure.regionprops(highlight_big.astype(int))
 
             if len(props) == 0:
