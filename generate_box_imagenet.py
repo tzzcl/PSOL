@@ -116,7 +116,7 @@ for class_ind in range(1000):
 
             if len(props) == 0:
                 #print(highlight)
-                bbox = [0, 0, w, h]
+                bbox = [0, 0, wi, he]
             else:
                 temp = props[0]['bbox']
                 bbox = [temp[1], temp[0], temp[3], temp[2]]
