@@ -78,8 +78,6 @@ def load_train_bbox(label_dict,bbox_dir):
     return final_dict
 def load_val_bbox(label_dict,all_imgs,gt_location):
     #gt_location ='/data/zhangcl/DDT-code/ImageNet_gt'
-    with open(os.path.join(gt_location,'ILSVRC2014_clsloc_validation_ground_truth.txt')) as f:
-        labels = f.readlines()
     import scipy.io as sio
     gt_label = sio.loadmat(os.path.join(gt_location,'cache_groundtruth.mat'))
     locs = [(x[0].split('/')[-1],x[0],x[1]) for x in all_imgs]
