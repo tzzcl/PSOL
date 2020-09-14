@@ -50,7 +50,7 @@ ten_crop_aug = transforms.Compose([
     transforms.Lambda(lambda crops: torch.stack([normalize(crop) for crop in crops])),
 ])
 locname = args.locmodel
-model = choose_locmodel(locname)
+model = choose_locmodel(locname, True)
 
 print(model)
 model = model.to(0)
