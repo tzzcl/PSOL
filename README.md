@@ -84,7 +84,7 @@ PATH            the path to the ImageNet dataset
 ```
 ### Testing
 
-We have provided some [pretrained models][modellink]. If you want to directly test it, please download it.
+We have provided some [pretrained models and cached groundtruth files][modellink]. If you want to directly test it, please download it.
 
 We use same options as `PSOL_training.py` in `PSOL_inference.py`. Then you can run:
 
